@@ -1,0 +1,25 @@
+---
+title: "Cleaning"
+author: "Terence Carey"
+date: "November 13, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+data <- read.csv('C:\\Users\\Terence\\Documents\\Data_Science_101\\googleplaystore.csv')
+d <- data[data$Size != 'Varies with device',]
+d <- d[d$Current.Ver != 'Varies with device',]
+d <- d[d$Current.Ver != 'NaN',]
+d <- d[d$Rating != 'NaN',]
+d$Installs <- gsub(',', '', d$Installs)
+d$Installs <- gsub('\\+', '', d$Installs)
+d$Installs <- as.numeric(as.character((d$Installs)))
+d$Current.Ver <- gsub('[a-z_()A-Z\\-\\+]', '', d$Current.Ver)
+d$Price <- gsub('$', '', d$Price)
+d$Price <- as.numeric(as.character((d$Price)))
+View(d)
+```
