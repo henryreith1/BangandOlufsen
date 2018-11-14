@@ -10,11 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, echo=FALSE}
-data <- read.csv('C:\\Users\\Terence\\Documents\\Data_Science_101\\googleplaystore.csv')
+data <- read.csv("googleplaystore.csv")
 d <- data[data$Size != 'Varies with device',]
 d <- d[d$Current.Ver != 'Varies with device',]
 d <- d[d$Current.Ver != 'NaN',]
 d <- d[d$Rating != 'NaN',]
+d <- d[d$Price != 'NaN',]
 d$Installs <- gsub(',', '', d$Installs)
 d$Installs <- gsub('\\+', '', d$Installs)
 d$Installs <- as.numeric(as.character((d$Installs)))
