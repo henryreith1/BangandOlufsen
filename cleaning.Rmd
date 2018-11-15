@@ -22,5 +22,7 @@ d$Installs <- as.numeric(as.character((d$Installs)))
 d$Current.Ver <- gsub('[a-z_()A-Z\\-\\+]', '', d$Current.Ver)
 d$Price <- gsub('$', '', d$Price)
 d$Price <- as.numeric(as.character((d$Price)))
+d$Updates <- ifelse(d$Current.Ver >= 2 , ifelse(d$Current.Ver >= 4, 2, 1), 0)
+d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver'))
 View(d)
 ```
