@@ -25,4 +25,16 @@ d$Price <- as.numeric(as.character((d$Price)))
 d$Updates <- ifelse(d$Current.Ver >= 2 , ifelse(d$Current.Ver >= 4, 2, 1), 0)
 d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver'))
 View(d)
+
+
+```
+
+```{r}
+library(ggplot2)
+g2 <- ggplot(d, aes(Category,Installs))
+g <- ggplot(d, aes(Category,Rating))
+
+g + geom_bar(stat = "identity") + coord_flip()
+g2 + geom_bar(stat = "identity") + coord_flip()
+g + geom_bar(stat = "identity") + coord_flip()+ coord_polar(theta = "x", direction=1 )
 ```
