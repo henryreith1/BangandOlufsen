@@ -1,0 +1,76 @@
+---
+title: "Cleaning"
+author: "Terence Carey"
+date: "November 13, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+d <- read.csv("googleplaystore.csv")
+d <- d[d$Size != 'Varies with device',]
+d <- d[d$Current.Ver != 'Varies with device',]
+d <- d[d$Current.Ver != 'NaN',]
+d <- d[d$Rating != 'NaN',]
+d <- d[d$Price != 'NaN',]
+d$Installs <- gsub(',', '', d$Installs)
+d$Installs <- gsub('\\+', '', d$Installs)
+d$Installs <- as.numeric(as.character((d$Installs)))
+d$Current.Ver <- gsub('[a-z_()A-Z\\-\\+]', '', d$Current.Ver)
+d$Price <- gsub('$', '', d$Price)
+d$Price <- as.numeric(as.character((d$Price)))
+d$Updates <- ifelse(d$Current.Ver >= 2 , ifelse(d$Current.Ver >= 4, 2, 1), 0)
+d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver'))
+
+View(d)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(ggthemes)
+#d2 <- d[order(d$Installs),]
+#d3 <- d[order(d$Rating),]
+
+d2$Installs <- factor(d2$Installs, levels = d2$Installs[order()])
+
+g2 <- ggplot(d2, aes(Category,Installs))
+
+g <- ggplot(d3, aes(Category,Rating))
+
+
+g + geom_bar(stat = "identity") + coord_flip()
+g2 + geom_bar(stat = "identity") + coord_flip()
+#g + geom_bar(stat = "identity") + coord_flip()+ coord_polar(theta = "x", direction=1 )
+```
+
+```{r}
+library(randomForest)
+output.forest <- randomForest(d ~ d$App + d$Category + d$Installs + d$Rating + d$Reviews + d$Price + d$Size, 
+           data = d)
+
+print(output.forest) 
+print(importance(fit,type = 2)) 
+```
+```{r}
+summary(d)
+```
+
+
+```{r}
+library(randomForest)
+
+set.seed(100)
+train <- sample(nrow(d), 0.7*nrow(d), replace = FALSE)
+TrainSet <- d[train,]
+ValidSet <- d[-train,]
+#summary(TrainSet)
+#summary(ValidSet)
+
+model1 <- randomForest(Installs ~ Rating, data = TrainSet, nTrees = 50, importance = TRUE)
+model1
+```
