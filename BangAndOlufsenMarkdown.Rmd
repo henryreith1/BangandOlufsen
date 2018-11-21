@@ -2,13 +2,16 @@
 title: "BangAndOlufsen"
 author: "Henry Reith"
 date: "November 20, 2018"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-###Cleaning Data - Got rid of unconsistencies, NA's, and items that we did not feel were useful. Turned installs from a numeric to factor. Added new column that put the number of updates into tiers and removed things that had a much higher of installs than others.  
+###Cleaning Data 
+#Got rid of unconsistencies, NA's, and items that we did not feel were useful. Turned installs from a numeric to factor. Added new column that put the number of updates into tiers and removed things that had a much higher of installs than others.  
 ```{r, echo=FALSE}
 
 library(caret)
@@ -33,7 +36,7 @@ d <- tail(d, nrow(d) -34)
 
 ```
 ###Bar Plots
-```{r}
+```{r, echo=False}
 library(ggplot2)
 library(ggthemes)
 
@@ -44,8 +47,9 @@ g + geom_bar(stat = "identity") + coord_flip() + ggtitle("Category By Rating")
 g2 + geom_bar(stat = "identity") + coord_flip()+ ggtitle("Category By Installs")
 ```
 
-###Random Forest Classifier
-```{r}
+###Random Forest Classifier 
+#Created a random forest classifier to predict which features determined Installs. We were succesful in building the model but could not generate a confusion matrix. Attempts for confusion matrix are commented out in code. This was a successful model with a 75% Variables explained.  
+```{r, echo=FALSE}
 library(randomForest)
 library(caret)
 
@@ -77,7 +81,8 @@ model1
 
 
 ###RPart Model Before Removal of Outliers
-```{r}
+#Created RPart model with RSquared value of .49
+```{r, echo=False}
 library(caret)
 d <- na.omit(d)
 
@@ -98,7 +103,8 @@ fit
 ```
 
 ###RPart Unsuccessful
-```{r}
+#Created RPart model with RSquared Value of .07. This model did not include our category of Reviews which shows the importance of this variable. 
+```{r, echo=False}
 
 library(caret)
 d <- na.omit(d)
@@ -117,8 +123,8 @@ fit
 ```
 
 ###After Removal of Outliers
-
-```{r}
+#RPart model with RSquared value of .69. This model was created after removing outliers and includes Reviews as a factor. 
+```{r, echo=False}
 d <- na.omit(d)
 set.seed(4000)
 dmv = dummyVars(~Category + Reviews + Rating, data = d)
@@ -133,7 +139,8 @@ fit
 
 
 ###Kmeans Clustering Model
-```{r}
+
+```{r, echo=False}
 library(ggplot2)
 library(cluster)
 
