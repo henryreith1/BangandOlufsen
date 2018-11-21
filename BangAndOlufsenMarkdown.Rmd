@@ -1,0 +1,60 @@
+---
+title: "BangAndOlufsen"
+author: "Henry Reith"
+date: "November 20, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+d <- read.csv("googleplaystore.csv")
+d <- d[d$Size != 'Varies with device',]
+d <- d[d$Current.Ver != 'Varies with device',]
+d <- d[d$Current.Ver != 'NaN',]
+d <- d[d$Rating != 'NaN',]
+d <- d[d$Price != 'NaN',]
+d$Installs <- gsub(',', '', d$Installs)
+d$Installs <- gsub('\\+', '', d$Installs)
+d$Installs <- as.numeric(as.character((d$Installs)))
+d$Current.Ver <- gsub('[a-z_()A-Z\\-\\+]', '', d$Current.Ver)
+d$Price <- gsub('\\$', '', d$Price)
+d$Price <- as.numeric(as.character((d$Price)))
+d$Updates <- ifelse(d$Current.Ver >= 2 , ifelse(d$Current.Ver >= 4, 2, 1), 0)
+d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver'))
+
+#View(d)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(ggthemes)
+
+g <- ggplot(d, aes(Category,Rating))
+g2 <- ggplot(d, aes(Category,Installs))
+
+g + geom_bar(stat = "identity") + coord_flip() + ggtitle("Category By Rating")
+g2 + geom_bar(stat = "identity") + coord_flip()+ ggtitle("Category By Installs")
+```
+
+
+```{r}
+library(randomForest)
+library(caret)
+
+
+set.seed(100)
+train <- sample(nrow(d), 0.7*nrow(d), replace = FALSE)
+TrainSet <- d[train,]
+ValidSet <- d[-train,]
+
+
+model1 <- randomForest(Installs ~ Rating + Category + Reviews, data = TrainSet, nTrees = 50, mtry = 2, importance = TRUE)
+model1
+confusionMatrix(model1, ValidSet, positive = NULL, dnn = c("Prediction", "Reference"))
+
+```
