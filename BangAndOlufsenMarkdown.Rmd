@@ -3,6 +3,7 @@ title: "BangAndOlufsen"
 author: "Henry Reith"
 date: "November 20, 2018"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -36,7 +37,7 @@ d <- tail(d, nrow(d) -34)
 
 ```
 ###Bar Plots
-```{r, echo=False}
+```{r, echo=FALSE}
 library(ggplot2)
 library(ggthemes)
 
@@ -48,7 +49,7 @@ g2 + geom_bar(stat = "identity") + coord_flip()+ ggtitle("Category By Installs")
 ```
 
 ###Random Forest Classifier 
-#Created a random forest classifier to predict which features determined Installs. We were succesful in building the model but could not generate a confusion matrix. Attempts for confusion matrix are commented out in code. This was a successful model with a 75% Variables explained.  
+#Created a random forest classifier to predict which features determined Installs. We were succesful in building the model but could not generate a confusion matrix. Attempts for confusion matrix are commented out in code. This was a successful model with a 75% Variables explained.  This is thus the best model that we have.
 ```{r, echo=FALSE}
 library(randomForest)
 library(caret)
@@ -82,7 +83,7 @@ model1
 
 ###RPart Model Before Removal of Outliers
 #Created RPart model with RSquared value of .49
-```{r, echo=False}
+```{r, echo=FALSE}
 library(caret)
 d <- na.omit(d)
 
@@ -104,7 +105,7 @@ fit
 
 ###RPart Unsuccessful
 #Created RPart model with RSquared Value of .07. This model did not include our category of Reviews which shows the importance of this variable. 
-```{r, echo=False}
+```{r, echo=FALSE}
 
 library(caret)
 d <- na.omit(d)
@@ -124,7 +125,7 @@ fit
 
 ###After Removal of Outliers
 #RPart model with RSquared value of .69. This model was created after removing outliers and includes Reviews as a factor. 
-```{r, echo=False}
+```{r, echo=FALSE}
 d <- na.omit(d)
 set.seed(4000)
 dmv = dummyVars(~Category + Reviews + Rating, data = d)
@@ -137,25 +138,34 @@ fit
 
 ```
 
+###These 3 cluster models attempt to cluster ratings with various other categories in our dataset. We found little predictive capability from these models. The only potentially useful clustered result in the Ratings vs. Installs, where a clear correlation is visible in the cluster plot. 
 
-###Kmeans Clustering Model
-
-```{r, echo=False}
+```{r}
 library(ggplot2)
 library(cluster)
 
-
+#Initialize random variable
 set.seed(30)
 
-d=na.omit(d)
+d=na.omit(d) #omit NA values
 d$Reviews <- as.numeric(d$Reviews)
 d$Rating <- as.numeric(d$Rating)
 
-clusters<-kmeans(scale(d[,4:3]), 5, nstart=25)
+clusters<-kmeans(scale(d[,4:3]), 5, nstart=25) 
 
 d$cluster=as.factor(clusters$cluster)
-View(d)
+
 ggplot(d, aes(x=Reviews, y=Rating, color=cluster)) +geom_point()
 
+d1<- subset(d, select=c("Rating", "Installs"))
+clusters2<- kmeans(scale(d1), 4, nstart=25)
+d1$cluster=as.factor(clusters2$cluster)
+ggplot(d1, aes(x=Installs, y=Rating, color=cluster)) +geom_point()
 
+
+d2<- subset(d, select=c("Rating", "Updates"))
+View(d2)
+clusters3<- kmeans(scale(d2), 4, nstart=25)
+d2$cluster=as.factor(clusters3$cluster)
+ggplot(d2, aes(x=Updates, y=Rating, color=cluster)) +geom_point()
 ```
