@@ -8,14 +8,18 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+###Cleaning Data
 ```{r, echo=FALSE}
+
+library(caret)
+library(rpart)
 d <- read.csv("googleplaystore.csv")
 d <- d[d$Size != 'Varies with device',]
 d <- d[d$Current.Ver != 'Varies with device',]
-d <- d[d$Current.Ver != 'NaN',]
-d <- d[d$Rating != 'NaN',]
-d <- d[d$Price != 'NaN',]
+d <- d[!is.nan(d$Current.Ver),]
+d <- d[!is.nan(d$Rating),]
+d <- d[!is.nan(d$Price),]
+d <- d[!is.nan(d$Type),]
 d$Installs <- gsub(',', '', d$Installs)
 d$Installs <- gsub('\\+', '', d$Installs)
 d$Installs <- as.numeric(as.character((d$Installs)))
@@ -23,13 +27,12 @@ d$Current.Ver <- gsub('[a-z_()A-Z\\-\\+]', '', d$Current.Ver)
 d$Price <- gsub('\\$', '', d$Price)
 d$Price <- as.numeric(as.character((d$Price)))
 d$Updates <- ifelse(d$Current.Ver >= 2 , ifelse(d$Current.Ver >= 4, 2, 1), 0)
-d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver'))
-
-#View(d)
-
+d <- subset(d, select = c('App','Category','Rating','Reviews','Size','Installs','Type','Price','Content.Rating','Last.Updated','Updates','Android.Ver' ))
+d <- d[order(d$Installs, decreasing = TRUE),]
+d <- tail(d, nrow(d) -34)
 
 ```
-
+###Bar Plots
 ```{r}
 library(ggplot2)
 library(ggthemes)
@@ -41,7 +44,7 @@ g + geom_bar(stat = "identity") + coord_flip() + ggtitle("Category By Rating")
 g2 + geom_bar(stat = "identity") + coord_flip()+ ggtitle("Category By Installs")
 ```
 
-
+###Random Forest Classifier
 ```{r}
 library(randomForest)
 library(caret)
@@ -53,8 +56,99 @@ TrainSet <- d[train,]
 ValidSet <- d[-train,]
 
 
-model1 <- randomForest(Installs ~ Rating + Category + Reviews, data = TrainSet, nTrees = 50, mtry = 2, importance = TRUE)
+model1 <- randomForest(Installs ~ Category +Type + Rating + Reviews , data = TrainSet, nTrees = 300, mtry = 3, importance = TRUE, savePredictions = "final", classProbs = TRUE)
 model1
-confusionMatrix(model1, ValidSet, positive = NULL, dnn = c("Prediction", "Reference"))
+
+#model1$pred[order(model1$pred),2]
+
+#class_log <- ifelse(model1[,1] > .5, "YES", "NO")
+#p <- confusionMatrix(class_log, ValidSet[["Installs"]])
+#p
+
+#confusionMatrix(model1, conf.level = 0.95, threshold = 0.8)
+#confusionMatrix(model1, ValidSet, positive = NULL, dnn = c("Prediction", "Reference"))
+
+#p1 <- predict(model1, TrainSet, type="response")
+#print("Prediction & Confusion Matrix - train data")
+
+#confusionMatrix(model1$pred[order(model1$pred),2], TrainSet$Installs)
+```
+
+
+
+###RPart Model Before Removal of Outliers
+```{r}
+library(caret)
+d <- na.omit(d)
+
+set.seed(4000)
+dmv = dummyVars(~Category + Reviews + Rating + Size + Type + Price + Content.Rating + Last.Updated + Updates + Android.Ver , data = d)
+features = predict(dmv, d)
+#head(features)
+y = d$Installs
+#plot(density(y))
+
+ctr <- trainControl(method = "cv", number = 4, classProbs = F, search='random')
+fit = train(features,y,
+            method = 'rpart',
+            trControl = ctr, tuneLength = 10)
+fit
+
+
+```
+
+###RPart Unsuccessful
+```{r}
+
+library(caret)
+d <- na.omit(d)
+
+dmv = dummyVars(~Category + Rating , data = d)
+features = predict(dmv, d)
+#head(features)
+y = d$Installs
+#plot(density(y))
+
+ctr <- trainControl(method = "cv", number = 4, classProbs = F, search='random')
+fit = train(features,y,
+            method = 'rpart',
+            trControl = ctr, tuneLength = 10)
+fit
+```
+
+###After Removal of Outliers
+
+```{r}
+d <- na.omit(d)
+set.seed(4000)
+dmv = dummyVars(~Category + Reviews + Rating, data = d)
+features = predict(dmv,d)
+y = d$Installs
+
+ctr <- trainControl(method = "cv", number = 4, classProbs = F, search = "random")
+fit <- train(features,y , method = 'rpart', trControl = ctr, tuneLength = 10)
+fit
+
+```
+
+
+###Kmeans Clustering Model
+```{r}
+library(ggplot2)
+library(cluster)
+
+
+set.seed(30)
+
+d=na.omit(d)
+d$Reviews <- as.numeric(d$Reviews)
+d$Rating <- as.numeric(d$Rating)
+
+clusters<-kmeans(scale(d[,4:3]), 5, nstart=25)
+
+d$cluster=as.factor(clusters$cluster)
+View(d)
+ggplot(d, aes(x=Reviews, y=Rating, color=cluster)) +geom_point()
+
 
 ```
