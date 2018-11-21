@@ -42,5 +42,35 @@ y = d$Installs
 ctr <- trainControl(method = "cv", number = 4, classProbs = F, search = "random")
 fit <- train(features,y , method = 'rpart', trControl = ctr, tuneLength = 10)
 
+```
 
+
+##Linear Model stuff
+```{r}
+
+library(caret)
+set.seed(100)
+
+
+d_train <- d[sample(1:nrow(d), 5500,
+   replace=FALSE),] 
+d_test = d[!(d$App %in% d_train$App),]
+
+dmv = dummyVars(~Reviews + Category + Content.Rating + Updates + Size + Type, data=d_train)
+features = predict(dmv, d_train)
+y <- d_train$Rating
+ctr = trainControl(method = "cv", number = 4, classProbs =F, search = "random")
+fit3 <- train(features, y, preProcess=c("center", "scale", "pca", "zv", "nzv"),
+             method = 'glm',
+             trControl = ctr, tuneLength = 10)
+fit3
+
+dmv = dummyVars(~Reviews + Category + Updates + Type + Rating, data=d_train)
+features = predict(dmv, d_train)
+y <- d_train$Installs
+ctr = trainControl(method = "cv", number = 4, classProbs =F, search = "random")
+fit3 <- train(features, y, preProcess=c("center", "scale", "pca", "zv", "nzv"),
+             method = 'glm',
+             trControl = ctr, tuneLength = 10)
+fit3
 ```
