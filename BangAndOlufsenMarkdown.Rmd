@@ -36,13 +36,32 @@ d <- d[order(d$Installs, decreasing = TRUE),]
 d <- tail(d, nrow(d) -34)
 
 ```
+
+
+##Subsetting our data and aggregating so that we can reorder for the barplots 
+```{r}
+
+yz <- subset(d, select =c('Category', 'Installs'))
+yz<-aggregate(yz$Installs, by=list(Category=yz$Category), FUN=sum)
+View(yz)
+
+
+xz <- subset(d, select =c('Category', 'Rating'))
+xz<-aggregate(xz$Rating, by=list(Category=xz$Category), FUN=sum)
+View(xz)
+
+```
+
+
 ###Bar Plots
 ```{r, echo=FALSE}
 library(ggplot2)
 library(ggthemes)
 
-g <- ggplot(d, aes(Category,Rating))
-g2 <- ggplot(d, aes(Category,Installs))
+
+
+g <- ggplot(xz, aes(reorder(Category,x),x))
+g2 <- ggplot(yz, aes(reorder(Category,x),x))
 
 g + geom_bar(stat = "identity") + coord_flip() + ggtitle("Category By Rating")
 g2 + geom_bar(stat = "identity") + coord_flip()+ ggtitle("Category By Installs")
@@ -62,23 +81,68 @@ ValidSet <- d[-train,]
 
 
 model1 <- randomForest(Installs ~ Category +Type + Rating + Reviews , data = TrainSet, nTrees = 300, mtry = 3, importance = TRUE, savePredictions = "final", classProbs = TRUE)
+
+
 model1
 
-#model1$pred[order(model1$pred),2]
-
-#class_log <- ifelse(model1[,1] > .5, "YES", "NO")
-#p <- confusionMatrix(class_log, ValidSet[["Installs"]])
-#p
-
-#confusionMatrix(model1, conf.level = 0.95, threshold = 0.8)
-#confusionMatrix(model1, ValidSet, positive = NULL, dnn = c("Prediction", "Reference"))
-
-#p1 <- predict(model1, TrainSet, type="response")
-#print("Prediction & Confusion Matrix - train data")
-
-#confusionMatrix(model1$pred[order(model1$pred),2], TrainSet$Installs)
 ```
 
+```{r}
+
+preds <- predict(model1, ValidSet)
+head(preds)
+
+actuals <- predict(model1, TrainSet)
+head(actuals)
+
+
+plot(preds, ValidSet$Installs) + abline(preds,actuals) + abline(0,1, col='red') 
+```
+
+
+```{r}
+imp <- importance(model1)
+imp
+#varImp(model1)
+
+```
+
+
+```{r}
+model2 <- randomForest(Installs ~ Category +Type + Rating + Reviews + Price + Content.Rating + Updates , data = TrainSet, nTrees = 300, mtry = 3, importance = TRUE, savePredictions = "final", classProbs = TRUE)
+
+
+model2
+
+
+
+```
+
+```{r}
+imp2 <- importance(model2)
+imp2
+#varImp(model2)
+FeatureImportance <- as.data.frame(imp2)
+names(FeatureImportance) <- c("IncMSE", "IncNodePurity")
+FeatureImportance <- FeatureImportance[order(FeatureImportance$IncMSE, decreasing =  TRUE),]
+FeatureImportance
+
+```
+
+```{r}
+
+preds2 <- predict(model2, ValidSet)
+head(preds)
+
+actuals2 <- predict(model2, TrainSet)
+head(actuals)
+
+
+plot(preds2, ValidSet$Installs) + abline(preds2,actuals2) + abline(0,1, col='red') 
+
+
+
+```
 
 
 ###RPart Model Before Removal of Outliers
