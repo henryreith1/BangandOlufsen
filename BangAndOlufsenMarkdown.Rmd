@@ -12,7 +12,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ###Cleaning Data 
-#Got rid of unconsistencies, NA's, and items that we did not feel were useful. Turned installs from a numeric to factor. Added new column that put the number of updates into tiers and removed things that had a much higher of installs than others.  
+#Got rid of unconsistencies, NA's, and items that we did not feel were useful. Turned installs from a numeric to factor. Added new column that put the number of updates into tiers and removed things that had a much higher of install's than others.  
 ```{r, echo=FALSE}
 
 library(caret)
