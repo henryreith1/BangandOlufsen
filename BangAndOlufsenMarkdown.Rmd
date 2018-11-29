@@ -150,7 +150,6 @@ write.table(ValidSet, file = 'validset.csv', sep = ",", row.names = F)
 ###RPart Model Before Removal of Outliers
 #Created RPart model with RSquared value of .49
 ```{r, echo=FALSE}
-library(caret)
 d <- na.omit(d)
 
 set.seed(4000)
@@ -235,3 +234,7 @@ clusters3<- kmeans(scale(d2), 4, nstart=25)
 d2$cluster=as.factor(clusters3$cluster)
 ggplot(d2, aes(x=Updates, y=Rating, color=cluster)) +geom_point()
 ```
+
+
+#Executive Summary
+The objective of this project was to determine which characteristics contribute to a successful mobile application. Data for this project was sourced from a Google Play Store database hosted on Kaggle. This data was then cleaned by removing unnecessary columns and removing problematic data entries (e.g. NaN values). A Random Forest classifier scheme was utilized to classify which categories in our data-set were most important in predicting a successful mobile application. From this scheme, it was determined that "Reviews", "Rating", and "Category" were the most important categories. An R-part method was utilized in R to try to predict what resulted in a high number of installs and it had a R-squared . K-means clustering was used to determine the following relationships: "Rating" vs. "Installs", "Rating" vs. "Reviews", and "Rating" vs. "Updates". The K-means analyses were ultimately not useful for predicting a successful app, since there were little to no useful clusters produced.. However, a weak positive correlation was noted for the "Rating" vs. "Installs" relationship. Ultimately, the most useful results were produced by the Random Forest analysis of our data, yielding an R-squared value of 0.77.
