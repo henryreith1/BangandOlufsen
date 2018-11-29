@@ -109,7 +109,7 @@ imp
 
 
 ```{r}
-model2 <- randomForest(Installs ~ Category +Type + Rating + Reviews + Price + Content.Rating + Updates , data = TrainSet, nTrees = 300, mtry = 3, importance = TRUE, savePredictions = "final", classProbs = TRUE)
+model2 <- randomForest(Installs ~ Category +Type + Rating + Reviews + Price + Content.Rating + Updates , data = TrainSet, nTrees = 500, mtry = 3, importance = TRUE, savePredictions = "final", classProbs = TRUE)
 
 
 model2
@@ -140,8 +140,10 @@ head(actuals)
 
 plot(preds2, ValidSet$Installs) + abline(preds2,actuals2) + abline(0,1, col='red') 
 
+ValidSet$preds <- preds2 
+View(Validset)
 
-
+write.table(ValidSet, file = 'validset.csv', sep = ",", row.names = F)
 ```
 
 
